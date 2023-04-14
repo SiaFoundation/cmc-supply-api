@@ -146,6 +146,7 @@ func main() {
 	go func() {
 		// subscribe to the consensus set
 		// done in a goroutine to prevent blocking the main thread
+		log.Info("subscribing to consensus set", zap.Stringer("last change", lastProcessedChange))
 		if err := cs.ConsensusSetSubscribe(subscriber, lastProcessedChange, ctx.Done()); err != nil {
 			log.Panic("failed to subscribe to consensus set", zap.Error(err))
 		}
@@ -156,4 +157,5 @@ func main() {
 
 	// wait for the context to be canceled
 	<-ctx.Done()
+	log.Info("shutting down")
 }
