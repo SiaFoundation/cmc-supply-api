@@ -2,7 +2,6 @@ package stats
 
 import (
 	"bytes"
-	"errors"
 	"sync"
 
 	"gitlab.com/NebulousLabs/encoding"
@@ -34,7 +33,7 @@ type (
 		log *zap.Logger
 
 		mu    sync.Mutex
-		stats []BlockStats
+		stats BlockStats
 	}
 )
 
@@ -44,88 +43,69 @@ func (p *Provider) ProcessConsensusChange(cc modules.ConsensusChange) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	for range cc.RevertedDiffs {
-		p.stats = p.stats[:len(p.stats)-1]
+	// calculate the circulating supply
+	for _, sd := range cc.SiacoinOutputDiffs {
+		address := types.Address(sd.SiacoinOutput.UnlockHash)
+		// ignore void outputs
+		if address == types.VoidAddress {
+			continue
+		}
+
+		var value types.Currency
+		convertToCore(sd.SiacoinOutput.Value, &value)
+		switch sd.Direction {
+		case modules.DiffApply:
+			value, overflow := p.stats.CirculatingSupply.AddWithOverflow(value)
+			if overflow {
+				log.Panic("circulating supply overflowed", zap.Stringer("outputID", sd.ID), zap.String("value", value.ExactString()), zap.String("circulatingSupply", p.stats.CirculatingSupply.ExactString()))
+			}
+			p.stats.CirculatingSupply = value
+		case modules.DiffRevert:
+			value, underflow := p.stats.CirculatingSupply.SubWithUnderflow(value)
+			if underflow {
+				log.Panic("circulating supply underflowed", zap.Stringer("outputID", sd.ID), zap.String("value", value.ExactString()), zap.String("circulatingSupply", p.stats.CirculatingSupply.ExactString()))
+			}
+			p.stats.CirculatingSupply = value
+		default:
+			log.Panic("unrecognized diff direction")
+		}
 	}
 
-	blockHeight := uint64(cc.BlockHeight) - uint64(len(cc.AppliedDiffs)) + 1
-	for i, diff := range cc.AppliedDiffs {
-		var stats BlockStats
-		if len(p.stats) > 0 {
-			stats = p.stats[len(p.stats)-1]
+	// calculate the active contract count
+	for _, fd := range cc.FileContractDiffs {
+		switch fd.Direction {
+		case modules.DiffApply:
+			p.stats.ActiveContractCount++
+		case modules.DiffRevert:
+			p.stats.ActiveContractCount--
+		default:
+			log.Panic("unrecognized diff direction")
 		}
-
-		for _, sd := range diff.SiacoinOutputDiffs {
-			address := types.Address(sd.SiacoinOutput.UnlockHash)
-			// ignore void outputs
-			if address == types.VoidAddress {
-				continue
-			}
-
-			var value types.Currency
-			convertToCore(sd.SiacoinOutput.Value, &value)
-			switch sd.Direction {
-			case modules.DiffApply:
-				value, overflow := stats.CirculatingSupply.AddWithOverflow(value)
-				if overflow {
-					log.Panic("circulating supply overflowed", zap.Stringer("outputID", sd.ID), zap.String("value", value.ExactString()), zap.String("circulatingSupply", stats.CirculatingSupply.ExactString()))
-				}
-				stats.CirculatingSupply = value
-			case modules.DiffRevert:
-				value, underflow := stats.CirculatingSupply.SubWithUnderflow(value)
-				if underflow {
-					log.Panic("circulating supply underflowed", zap.Stringer("outputID", sd.ID), zap.String("value", value.ExactString()), zap.String("circulatingSupply", stats.CirculatingSupply.ExactString()))
-				}
-				stats.CirculatingSupply = value
-			default:
-				log.Panic("unrecognized diff direction")
-			}
-		}
-
-		for _, fd := range diff.FileContractDiffs {
-			switch fd.Direction {
-			case modules.DiffApply:
-				stats.ActiveContractCount++
-			case modules.DiffRevert:
-				stats.ActiveContractCount--
-			default:
-				log.Panic("unrecognized diff direction")
-			}
-		}
-
-		for _, sd := range diff.SiafundPoolDiffs {
-			switch sd.Direction {
-			case modules.DiffApply:
-				convertToCore(sd.Adjusted, &stats.SiafundPool)
-			case modules.DiffRevert:
-				convertToCore(sd.Previous, &stats.SiafundPool)
-			}
-		}
-
-		stats.Index = types.ChainIndex{
-			ID:     types.BlockID(cc.AppliedBlocks[i].ID()),
-			Height: blockHeight,
-		}
-		convertToCore(stypes.CalculateNumSiacoins(stypes.BlockHeight(blockHeight)), &stats.TotalSupply)
-		blockHeight++
-		p.stats = append(p.stats, stats)
 	}
+
+	// calculate the siafund pool
+	for _, sd := range cc.SiafundPoolDiffs {
+		switch sd.Direction {
+		case modules.DiffApply:
+			convertToCore(sd.Adjusted, &p.stats.SiafundPool)
+		case modules.DiffRevert:
+			convertToCore(sd.Previous, &p.stats.SiafundPool)
+		}
+	}
+
+	// set the chain index and total supply
+	p.stats.Index = types.ChainIndex{
+		ID:     types.BlockID(cc.AppliedBlocks[len(cc.AppliedBlocks)-1].ID()),
+		Height: uint64(cc.BlockHeight),
+	}
+	convertToCore(stypes.CalculateNumSiacoins(cc.BlockHeight), &p.stats.TotalSupply)
 	log.Info("processed consensus change")
 }
 
 func (p *Provider) Stats() BlockStats {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	return p.stats[len(p.stats)-1]
-}
-
-func (p *Provider) StatsHeight(height uint64) (BlockStats, error) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	if height >= uint64(len(p.stats)) {
-		return BlockStats{}, errors.New("height out of range")
-	}
-	return p.stats[int(height)], nil
+	return p.stats
 }
 
 func convertToCore(siad encoding.SiaMarshaler, core types.DecoderFrom) {
