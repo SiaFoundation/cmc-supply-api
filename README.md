@@ -1,10 +1,9 @@
 # Overview
 Implements a minimal Sia subscriber for processing data from Sia's consensus set
-and transaction pool.
 
 # Usage
 ```
-subscriberd --dir ~/subscriber
+statsd --dir ~/statsd
 ```
 
 ## Building

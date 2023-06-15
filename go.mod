@@ -1,9 +1,12 @@
-module github.com/n8maninger/sia-consensus-subscriber
+module github.com/n8maninger/sia-coinbased
 
-go 1.19
+go 1.20
 
 require (
-	go.sia.tech/siad v1.5.10-0.20230228235644-3059c0b930ca
+	gitlab.com/NebulousLabs/encoding v0.0.0-20200604091946-456c3dc907fe
+	go.sia.tech/core v0.1.12-0.20230502175005-71bb29c5f388
+	go.sia.tech/jape v0.9.0
+	go.sia.tech/siad v1.5.10-0.20230503213759-c4fb2306f70d
 	go.uber.org/zap v1.24.0
 )
 
@@ -11,12 +14,12 @@ require (
 	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da // indirect
 	github.com/dchest/threefish v0.0.0-20120919164726-3ecf4c494abf // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/julienschmidt/httprouter v1.3.0 // indirect
 	github.com/klauspost/cpuid v1.2.2 // indirect
 	github.com/klauspost/reedsolomon v1.9.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	gitlab.com/NebulousLabs/bolt v1.4.4 // indirect
 	gitlab.com/NebulousLabs/demotemutex v0.0.0-20151003192217-235395f71c40 // indirect
-	gitlab.com/NebulousLabs/encoding v0.0.0-20200604091946-456c3dc907fe // indirect
 	gitlab.com/NebulousLabs/entropy-mnemonics v0.0.0-20181018051301-7532f67e3500 // indirect
 	gitlab.com/NebulousLabs/errors v0.0.0-20200929122200-06c536cf6975 // indirect
 	gitlab.com/NebulousLabs/fastrand v0.0.0-20181126182046-603482d69e40 // indirect
@@ -31,7 +34,9 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20220507011949-2cf3adece122 // indirect
-	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
-	golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1 // indirect
-	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/net v0.5.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/tools v0.5.0 // indirect
+	lukechampine.com/frand v1.4.2 // indirect
 )

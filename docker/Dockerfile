@@ -1,0 +1,31 @@
+FROM docker.io/library/golang:1.20 AS builder
+
+WORKDIR /coinbase
+
+COPY . .
+# build
+# RUN go generate ./...
+RUN go build -o bin/ -tags='netgo timetzdata' -trimpath -a -ldflags '-s -w -linkmode external -extldflags "-static"'  ./cmd/coinbased
+
+FROM docker.io/library/alpine:3
+LABEL maintainer="The Sia Foundation <info@sia.tech>" \
+      org.opencontainers.image.description.vendor="The Sia Foundation" \
+      org.opencontainers.image.description="A coinbase container - provides coinbase statistics for the Sia network" \
+      org.opencontainers.image.source="https://github.com/n8maninger/sia-coinbased" \
+      org.opencontainers.image.licenses=MIT
+
+ENV PUID=0
+ENV PGID=0
+
+# copy binary and prepare data dir.
+COPY --from=builder /coinbase/bin/* /usr/bin/
+VOLUME [ "/data" ]
+
+# API port
+EXPOSE 9980/tcp
+# RPC port
+EXPOSE 9981/tcp
+
+USER ${PUID}:${PGID}
+
+ENTRYPOINT [ "coinbased", "-log.stdout", "-dir", "/data", "-api", ":9980" ]
