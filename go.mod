@@ -1,8 +1,9 @@
-module github.com/n8maninger/sia-coinbased
+module go.sia.tech/cmc-supply-api
 
 go 1.20
 
 require (
+	github.com/shopspring/decimal v1.3.1
 	gitlab.com/NebulousLabs/encoding v0.0.0-20200604091946-456c3dc907fe
 	go.sia.tech/core v0.1.12-0.20230502175005-71bb29c5f388
 	go.sia.tech/jape v0.9.0

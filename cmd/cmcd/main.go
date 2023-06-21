@@ -13,8 +13,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/n8maninger/sia-coinbased/api"
-	"github.com/n8maninger/sia-coinbased/stats"
+	"go.sia.tech/cmc-supply-api/api"
+	"go.sia.tech/cmc-supply-api/stats"
 	"go.sia.tech/siad/modules/consensus"
 	"go.sia.tech/siad/modules/gateway"
 	"go.sia.tech/siad/modules/transactionpool"

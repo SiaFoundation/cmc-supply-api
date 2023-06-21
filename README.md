@@ -3,15 +3,15 @@ Implements a minimal Sia subscriber for processing data from Sia's consensus set
 
 # Usage
 ```
-statsd --dir ~/statsd
+cmcd -dir ~/cmcd
 ```
 
 ## Building
 ```
-go build -o bin/ ./cmd/subscriberd
+go build -o bin/ ./cmd/cmcd
 ```
 
 ### Testnet
 ```
-go build -o bin/ -tags testnet ./cmd/subscriberd
+go build -o bin/ -tags testnet ./cmd/cmcd
 ```

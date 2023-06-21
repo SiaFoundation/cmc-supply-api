@@ -35,7 +35,7 @@ jobs:
         with:
           flavor: |
             suffix=-testnet,onlatest=true
-          images: ghcr.io/n8maninger/sia-coinbased
+          images: ghcr.io/siafoundation/cmc-supply-api
           tags: |
             type=ref,event=branch
             type=sha,prefix=
