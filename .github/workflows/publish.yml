@@ -33,7 +33,7 @@ jobs:
         name: generate tags
         id: meta
         with:
-          images: ghcr.io/${{ github.repository_owner }}/${{ github.repository_name }}
+          images: ghcr.io/${{ github.repository }}
           tags: |
             type=ref,event=branch
             type=sha,prefix=
