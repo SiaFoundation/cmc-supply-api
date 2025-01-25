@@ -109,23 +109,37 @@ func main() {
 				}
 				jc.Encode(state.Index)
 			},
+			"GET /supply/total": func(jc jape.Context) {
+				state, err := db.State()
+				if jc.Check("failed to get state", err) != nil {
+					return
+				}
+				jc.Encode(decimal.NewFromBigInt(state.TotalSupply.Big(), -24).InexactFloat64()) // 1 SC = 10^24 H
+			},
 			"GET /supply/circulating": func(jc jape.Context) {
 				foundationTreasury, err := db.FoundationTreasury()
 				if jc.Check("failed to get foundation treasury", err) != nil {
 					return
 				}
-				circulating, err := db.CirculatingSupply()
-				if jc.Check("failed to get circulating supply", err) != nil {
+				state, err := db.State()
+				if jc.Check("failed to get state", err) != nil {
 					return
 				}
-				jc.Encode(decimal.NewFromBigInt(circulating.Sub(foundationTreasury).Big(), -24).InexactFloat64()) // 1 SC = 10^24 H
+				jc.Encode(decimal.NewFromBigInt(state.CirculatingSupply.Sub(foundationTreasury).Big(), -24).InexactFloat64()) // 1 SC = 10^24 H
 			},
-			"GET /supply/total": func(jc jape.Context) {
-				total, err := db.TotalSupply()
-				if jc.Check("failed to get total supply", err) != nil {
+			"GET /supply/burned": func(jc jape.Context) {
+				state, err := db.State()
+				if jc.Check("failed to get state", err) != nil {
 					return
 				}
-				jc.Encode(decimal.NewFromBigInt(total.Big(), -24).InexactFloat64()) // 1 SC = 10^24 H
+				jc.Encode(state.BurnedSupply)
+			},
+			"GET /foundation/treasury": func(jc jape.Context) {
+				foundationTreasury, err := db.FoundationTreasury()
+				if jc.Check("failed to get foundation treasury", err) != nil {
+					return
+				}
+				jc.Encode(decimal.NewFromBigInt(foundationTreasury.Big(), -24).InexactFloat64()) // 1 SC = 10^24 H
 			},
 		}),
 	}

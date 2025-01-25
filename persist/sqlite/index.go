@@ -76,22 +76,6 @@ func (s *Store) State() (state index.State, err error) {
 	return
 }
 
-// TotalSupply returns the total supply
-func (s *Store) TotalSupply() (value types.Currency, err error) {
-	err = s.transaction(func(tx *txn) error {
-		return tx.QueryRow(`SELECT total_supply FROM global_settings`).Scan(decode(&value))
-	})
-	return
-}
-
-// CirculatingSupply returns the current circulating supply
-func (s *Store) CirculatingSupply() (value types.Currency, err error) {
-	err = s.transaction(func(tx *txn) error {
-		return tx.QueryRow(`SELECT circulating_supply FROM global_settings`).Scan(decode(&value))
-	})
-	return
-}
-
 // FoundationTreasury returns the current value of the foundation treasury
 func (s *Store) FoundationTreasury() (value types.Currency, err error) {
 	err = s.transaction(func(tx *txn) error {
