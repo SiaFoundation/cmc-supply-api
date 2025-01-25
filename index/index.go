@@ -51,7 +51,7 @@ func UpdateConsensusState(ctx context.Context, store Store, client *api.Client, 
 				log.Fatal("failed to get last index", zap.Error(err))
 			}
 
-			reverted, applied, err := client.ConsensusUpdates(state.Index, 10)
+			reverted, applied, err := client.ConsensusUpdates(state.Index, 100)
 			if err != nil {
 				log.Fatal("failed to get consensus updates", zap.Error(err))
 			} else if len(reverted) == 0 && len(applied) == 0 {
