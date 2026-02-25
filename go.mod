@@ -1,6 +1,6 @@
 module go.sia.tech/cmc-supply-api
 
-go 1.23.3
+go 1.26.0
 
 require (
 	github.com/mattn/go-sqlite3 v1.14.24
